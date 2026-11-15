@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useUser } from '@clerk/react';
 import {
   initialCurrentUser,
   initialPortfolio,
@@ -13,6 +14,7 @@ import {
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  const { user, isLoaded: isClerkLoaded } = useUser();
   // Current user state with local storage persistence
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('campuscraft_user');
@@ -86,6 +88,21 @@ export const AppProvider = ({ children }) => {
 
   // Toast notification state
   const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (!isClerkLoaded || !user) return;
+
+    const email = user.primaryEmailAddress?.emailAddress || '';
+    const role = user.unsafeMetadata?.role === 'client' ? 'client' : 'student';
+    setCurrentUser((previous) => ({
+      ...previous,
+      name: user.fullName || user.firstName || email,
+      email,
+      avatar: user.imageUrl,
+      role: role === 'client' ? 'Client / Recruiter' : 'Student Freelancer',
+    }));
+    setUserRole(role);
+  }, [isClerkLoaded, user]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });

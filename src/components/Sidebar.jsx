@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   User,
@@ -16,10 +16,10 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { SignOutButton } from '@clerk/react';
 
 export const Sidebar = () => {
   const { currentUser, userRole, toggleRole } = useApp();
-  const navigate = useNavigate();
 
   const navItems = [
     { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, exact: true },
@@ -100,13 +100,12 @@ export const Sidebar = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-        >
-          <LogOut size={14} />
-          <span>Sign Out</span>
-        </button>
+        <SignOutButton>
+          <button className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+            <LogOut size={14} />
+            <span>Sign Out</span>
+          </button>
+        </SignOutButton>
       </div>
     </aside>
   );

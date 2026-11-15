@@ -16,6 +16,7 @@ import {
   FolderGit2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Show, SignOutButton } from '@clerk/react';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -76,6 +77,11 @@ export const Navbar = () => {
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <Show when="signed-out">
+              <Link to="/login" className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100">Sign in</Link>
+              <Link to="/register" className="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white hover:bg-brand-700">Create account</Link>
+            </Show>
+            <Show when="signed-in">
             {/* Quick Role Switcher Pill */}
             <button
               onClick={toggleRole}
@@ -162,28 +168,32 @@ export const Navbar = () => {
                   </Link>
 
                   <div className="border-t border-surface-border mt-1 pt-1">
-                    <Link
-                      to="/login"
+                    <SignOutButton>
+                      <button
                       onClick={() => setProfileDropdownOpen(false)}
                       className="flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-semibold"
                     >
                       <LogOut size={14} />
-                      <span>Switch Account / Login</span>
-                    </Link>
+                      <span>Sign out</span>
+                      </button>
+                    </SignOutButton>
                   </div>
                 </div>
               )}
             </div>
+            </Show>
           </div>
 
           {/* Mobile menu trigger */}
           <div className="md:hidden flex items-center gap-2">
+            <Show when="signed-in">
             <button
               onClick={toggleRole}
               className="text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700"
             >
               {userRole === 'student' ? 'Student' : 'Client'}
             </button>
+            </Show>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-xl text-slate-600 hover:text-surface-text hover:bg-slate-100"
@@ -212,6 +222,7 @@ export const Navbar = () => {
             </Link>
           ))}
           <div className="pt-2 border-t border-surface-border grid grid-cols-2 gap-2">
+            <Show when="signed-in">
             <Link
               to="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
@@ -226,6 +237,11 @@ export const Navbar = () => {
             >
               My Profile
             </Link>
+            </Show>
+            <Show when="signed-out">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-xl bg-slate-100 text-slate-800 text-xs font-bold text-center">Sign in</Link>
+              <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="py-2 px-3 rounded-xl bg-brand-600 text-white text-xs font-bold text-center">Create account</Link>
+            </Show>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ClerkProvider, useAuth } from '@clerk/react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -20,6 +21,25 @@ import MyApplications from './pages/MyApplications';
 import SettingsPage from './pages/SettingsPage';
 import { useApp } from './context/AppContext';
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import { AppProvider } from './context/AppContext';
+
+const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+const AuthRequired = () => (
+  <div className="max-w-2xl mx-auto my-20 p-8 bg-white rounded-3xl border border-surface-border text-center">
+    <h1 className="text-2xl font-extrabold">Authentication setup required</h1>
+    <p className="mt-3 text-sm text-surface-muted">Add your Clerk publishable key to <code>.env</code> as <code>VITE_CLERK_PUBLISHABLE_KEY</code>, then restart the dev server.</p>
+  </div>
+);
+
+const ProtectedRoute = ({ children }) => {
+  const { isLoaded, isSignedIn } = useAuth();
+  const location = useLocation();
+
+  if (!isLoaded) return <div className="p-12 text-center text-sm text-surface-muted">Loading account…</div>;
+  if (!isSignedIn) return <Navigate to="/login" replace state={{ from: location }} />;
+  return children;
+};
 
 // Dashboard layout wrapper with sidebar
 const DashboardLayout = ({ children }) => {
@@ -50,7 +70,7 @@ const PublicLayout = ({ children }) => {
   );
 };
 
-export const App = () => {
+const AppRoutes = () => {
   const { toast } = useApp();
 
   return (
@@ -83,8 +103,8 @@ export const App = () => {
         <Route path="/" element={<PublicLayout><LandingPage /></PublicLayout>} />
 
         {/* Auth Pages */}
-        <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
-        <Route path="/register" element={<PublicLayout><RegisterPage /></PublicLayout>} />
+        <Route path="/login/*" element={<PublicLayout><LoginPage /></PublicLayout>} />
+        <Route path="/register/*" element={<PublicLayout><RegisterPage /></PublicLayout>} />
 
         {/* Public Marketplace Exploration */}
         <Route path="/freelancers" element={<PublicLayout><ExploreFreelancers /></PublicLayout>} />
@@ -98,18 +118,30 @@ export const App = () => {
         <Route path="/profile/:id" element={<PublicLayout><PublicProfile /></PublicLayout>} />
 
         {/* Dashboard Routes with Sidebar */}
-        <Route path="/dashboard" element={<DashboardLayout><StudentDashboard /></DashboardLayout>} />
-        <Route path="/dashboard/portfolio" element={<DashboardLayout><StudentProfile /></DashboardLayout>} />
-        <Route path="/dashboard/services" element={<DashboardLayout><MyServices /></DashboardLayout>} />
-        <Route path="/dashboard/orders" element={<DashboardLayout><OrdersPage /></DashboardLayout>} />
-        <Route path="/dashboard/messages" element={<DashboardLayout><MessagingPage /></DashboardLayout>} />
-        <Route path="/dashboard/applications" element={<DashboardLayout><MyApplications /></DashboardLayout>} />
-        <Route path="/dashboard/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><StudentDashboard /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/portfolio" element={<ProtectedRoute><DashboardLayout><StudentProfile /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/services" element={<ProtectedRoute><DashboardLayout><MyServices /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/orders" element={<ProtectedRoute><DashboardLayout><OrdersPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/messages" element={<ProtectedRoute><DashboardLayout><MessagingPage /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/applications" element={<ProtectedRoute><DashboardLayout><MyApplications /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardLayout><SettingsPage /></DashboardLayout></ProtectedRoute>} />
 
         {/* Catch-all redirect to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
+  );
+};
+
+export const App = () => {
+  if (!clerkPublishableKey) return <AuthRequired />;
+
+  return (
+    <ClerkProvider publishableKey={clerkPublishableKey}>
+      <AppProvider>
+        <AppRoutes />
+      </AppProvider>
+    </ClerkProvider>
   );
 };
 
