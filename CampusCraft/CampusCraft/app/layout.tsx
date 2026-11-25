@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google"
+import "@fontsource-variable/geist"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
